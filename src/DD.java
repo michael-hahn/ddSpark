@@ -1,5 +1,6 @@
 import org.apache.spark.api.java.JavaRDD;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,17 +22,25 @@ public class DD<T> {
         int partitions = numberOfPartitions;
         int runTime = 1;
         int bar_offset = 0;
+        ArrayList<SubRDD<T>> failing_stack =  new ArrayList<SubRDD<T>>();
+        failing_stack.add(0,new SubRDD<T>(rdd, partitions,bar_offset ));
+        while (!failing_stack.isEmpty()) {
+           SubRDD<T> subrdd = failing_stack.remove(0);
+            rdd = subrdd.rdd;
+            bar_offset = subrdd.bar;
+            partitions = subrdd.partition;
 
-        while (true) {
+
             boolean assertResult = test(rdd, testFunc);
             //assert(assertResult == true);
             //System.out.println("Assertion passed ready to split");
-            if (!assertResult) return;
+            if (!assertResult) continue;
 
             if (rdd.count() <= 1) {
                 //Cannot further split RDD
                 System.out.println("DD: Done, RDD only holds one line");
-                return;
+                continue;
+               // return;
             }
 
             System.out.println("Spliting now...");
@@ -51,13 +60,15 @@ public class DD<T> {
             for (int i = 0; i < partitions; i++) {
                 System.out.println("Testing subRDD id:" + rddList[i].id());
                 boolean result = test(rddList[i], testFunc);
-                System.out.println("Testing is done");
+                System.out.println("Testing is done"); // True corresponds to failing test
                 if (result) {
-                    rdd_failed = true;
-                    next_rdd = rddList[i];
+                   rdd_failed = true;
+                 //   next_rdd = rddList[i];
                     next_partitions = 2;
                     bar_offset = 0;
-                    break;
+                    failing_stack.add(0,new SubRDD(rddList[i] , next_partitions,bar_offset));    // Adding to Failing Stack
+
+                    //   break;
                 }
             }
 
@@ -71,9 +82,9 @@ public class DD<T> {
                         rddBar_failed = true;
                         next_rdd = next_rdd.intersection(rddBar);
                         next_partitions = next_partitions - 1;
-
                         bar_offset = i;
-                        break;
+                        failing_stack.add(0,new SubRDD<T>(next_rdd , next_partitions, bar_offset));    // Adding to Failing Stack
+//                        break;
                     }
                 }
             }
@@ -82,13 +93,14 @@ public class DD<T> {
                 if (rdd.count() <= 2) {
                     //Cannot further split RDD
                     System.out.println("DD: Done, RDD only holds one line");
-                    return;
+                    continue;
                 }
 
                 next_partitions = Math.min((int) rdd.count(), partitions * 2);
+                failing_stack.add(0 , new SubRDD<T>(rdd, next_partitions, bar_offset));
                 System.out.println("DD: Increase granularity to: " + next_partitions);
             }
-            rdd = next_rdd;
+          //  rdd = next_rdd;
             partitions = next_partitions;
             runTime = runTime + 1;
             System.out.println("Finish one loop of dd");
@@ -100,3 +112,18 @@ public class DD<T> {
     }
 
 }
+
+
+
+class SubRDD<T>{
+    public JavaRDD<T> rdd;
+    public int partition;
+    public int bar ;
+public SubRDD(JavaRDD<T> rdd_ , int par, int bar_){
+    rdd = rdd_;
+    partition = par;
+    bar = bar_;
+
+}
+}
+

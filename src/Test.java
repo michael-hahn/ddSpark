@@ -97,7 +97,7 @@ public class Test implements Serializable, userTest<String> {
 
         Double std = words.stdev();
         System.out.println("The Standard Deviation is " + std);
-        if (std > 2) return true;
+        if (std > 5) return true;
         else return false;
     }
 }

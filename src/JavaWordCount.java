@@ -32,7 +32,7 @@ public final class JavaWordCount {
 
         SparkConf sparkConf = new SparkConf().setAppName("JavaWordCount").setMaster("local[1]");
         JavaSparkContext ctx = new JavaSparkContext(sparkConf);
-        JavaRDD<String> input = ctx.textFile(args[0], 1);
+        JavaRDD<String> input = ctx.textFile("test", 1);
 
         DD<String> delta_debug = new DD<String>();
 
