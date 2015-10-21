@@ -39,6 +39,7 @@ public class DD<T> {
             if (rdd.count() <= 1) {
                 //Cannot further split RDD
                 System.out.println("DD: Done, RDD only holds one line");
+                System.out.println("Delta Debugged Error inducing inputs: " +  rdd.collect());
                 continue;
                // return;
             }
@@ -93,6 +94,7 @@ public class DD<T> {
                 if (rdd.count() <= 2) {
                     //Cannot further split RDD
                     System.out.println("DD: Done, RDD only holds one line");
+                    System.out.println("Delta Debugged Error inducing inputs: " +  rdd.collect());
                     continue;
                 }
 
