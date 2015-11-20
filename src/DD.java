@@ -60,7 +60,6 @@ public class DD<T> {
 
             for (int i = 0; i < partitions; i++) {
                 System.out.println("Testing subRDD id:" + rddList[i].id());
-                rdd_failed = false;
                 boolean result = test(rddList[i], testFunc);
                 System.out.println("Testing is done"); // True corresponds to failing test
                 if (result) {
